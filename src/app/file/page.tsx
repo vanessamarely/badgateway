@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 
 export default function FileUpload() {
-  const [selectedFile, setSelectedFile] = useState();
+  const [selectedFile, setSelectedFile] = useState( null as any);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState();
+  const [selectedFiles, setSelectedFiles] = useState( [] as any);
   const [file, setFile] = useState({
     name: "",
     type: "",
-    id: "",
+    id: 0,
   });
 
   const handleFileChange = (event: any) => {
@@ -51,11 +51,15 @@ export default function FileUpload() {
   const handleMultipleFilesChange = (event: any) => {
     let files = event.target.files;
     let filesArray = Array.from(files);
-    setSelectedFiles(filesArray);
+    setSelectedFiles(filesArray as any);
   };
 
   const handleRemoveFile = (index: number) => {
     let files = selectedFiles;
+    if (!files) {
+      return;
+    }
+
     files.splice(index, 1);
     setSelectedFiles(files);
   };
@@ -73,7 +77,7 @@ export default function FileUpload() {
     const fileObject = {
       name: "file1",
       type: "image/jpeg",
-      id: "1",
+      id: 1,
     };
     setFile(fileObject);
   }, []);
@@ -133,7 +137,7 @@ export default function FileUpload() {
           />
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
           {selectedFiles &&
-            selectedFiles.map((file, index) => (
+            selectedFiles.map((file: any, index: number) => (
               <div key={index} className="flex flex-col">
                 <button
                   onClick={() => handleRemoveFile(index)}

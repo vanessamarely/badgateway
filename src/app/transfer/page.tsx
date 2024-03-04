@@ -9,12 +9,18 @@ const operators = [
 ];
 
 const Page = () => {
-  const [selectedOperator, setSelectedOperator] = useState(null);
+  const [selectedOperator, setSelectedOperator] = useState<{
+    id: number;
+    name: string;
+  }>({
+    id: 0,
+    name: "",
+  });
 
-  const handleSelect = (event) => {
+  const handleSelect = (event: any) => {
     const operatorId = event.target.value;
     const operator = operators.find((op) => op.id === Number(operatorId));
-    setSelectedOperator(operator);
+    setSelectedOperator(operator as any);
   };
 
   return (
@@ -44,7 +50,7 @@ const Page = () => {
         </select>
         {selectedOperator && <p>You selected: {selectedOperator.name}</p>}
         {selectedOperator && (
-          <p>The operator {selectedOperator.name} is selected.</p>
+          <p>The operator {selectedOperator?.name} is selected.</p>
         )}
       </div>
     </main>
