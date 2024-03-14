@@ -1,9 +1,11 @@
 "use client";
 
+import { auth } from "./../../firebaseClient";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 
 const LoginPage = () => {
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -12,9 +14,10 @@ const LoginPage = () => {
     });
   };
 
-  const handleLogin = (event: FormEvent) => {
+  const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     console.log(form);
+    await signInWithEmailAndPassword(auth, form.email, form.password);
   };
 
   return (
@@ -28,16 +31,16 @@ const LoginPage = () => {
         <form onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm">
             <div className="mt-4">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="email">email</label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-                autoComplete="username"
-                value={form.username}
+                placeholder="email"
+                autoComplete="email"
+                value={form.email}
                 onChange={handleInputChange}
               />
             </div>

@@ -1,23 +1,25 @@
 "use client";
 
+import { auth } from "./../../firebaseClient";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ChangeEvent, FormEvent, useState } from "react";
 
-export default function Register() {
-  interface UserProfile {
-    email: string;
-    fullName: string;
-    password: string;
-    confirmPassword: string;
-    idType: string;
-    idNumber: string;
-  }
+interface UserProfile {
+  email: string;
+  // fullName: string;
+  password: string;
+  confirmPassword: string;
+  // idType: string;
+  // idNumber: string;
+}
 
+export default function Register() {
   const [form, setForm] = useState<UserProfile>({
-    fullName: "",
+    // fullName: "",
     password: "",
     confirmPassword: "",
-    idType: "",
-    idNumber: "",
+    // idType: "",
+    // idNumber: "",
     email: "",
   });
 
@@ -28,10 +30,18 @@ export default function Register() {
     });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     console.log(form);
-    // Add your registration logic here
+    if (form.password === form.confirmPassword) {
+      try {
+        await createUserWithEmailAndPassword(auth, form.email, form.password);
+      } catch {
+        console.log("Sorry, something went wrong. Please try again.");
+      }
+    } else {
+      console.log("Passwords don't match. Please try again.");
+    }
   };
 
   return (
@@ -43,7 +53,7 @@ export default function Register() {
           </h2>
         </div>
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <label>
               Full Name:
               <input
@@ -51,6 +61,18 @@ export default function Register() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 value={form.fullName}
                 onChange={handleInputChange}
+              />
+            </label>
+          </div> */}
+          <div className="mt-4">
+            <label>
+              Email:
+              <input
+                type="email"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                value={form.email}
+                onChange={(e) => handleInputChange(e)}
+                name="email"
               />
             </label>
           </div>
@@ -62,6 +84,7 @@ export default function Register() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 value={form.password}
                 onChange={handleInputChange}
+                name="password"
               />
             </label>
           </div>
@@ -73,10 +96,11 @@ export default function Register() {
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 value={form.confirmPassword}
                 onChange={handleInputChange}
+                name="confirmPassword"
               />
             </label>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <label>
               Type of Identification:
               <input
@@ -97,18 +121,8 @@ export default function Register() {
                 onChange={handleInputChange}
               />
             </label>
-          </div>
-          <div className="mt-4">
-            <label>
-              Email:
-              <input
-                type="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={form.email}
-                onChange={handleInputChange}
-              />
-            </label>
-          </div>
+          </div> */}
+
           <div className="mt-4">
             <button
               type="submit"
