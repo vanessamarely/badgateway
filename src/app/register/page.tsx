@@ -6,26 +6,43 @@ import { ChangeEvent, FormEvent, useState } from "react";
 
 interface UserProfile {
   email: string;
-  // fullName: string;
   password: string;
   confirmPassword: string;
-  // idType: string;
-  // idNumber: string;
+}
+
+interface AdditionalData {
+  fullName: string;
+  idType: string;
+  idNumber: string;
 }
 
 export default function Register() {
+  const [idUser, setIdUser] = useState<string>("");
+  const [isValid, setIsValid] = useState<boolean>(false);
   const [form, setForm] = useState<UserProfile>({
-    // fullName: "",
     password: "",
     confirmPassword: "",
-    // idType: "",
-    // idNumber: "",
     email: "",
+  });
+
+  const [data, setData] = useState<AdditionalData>({
+    fullName: "",
+    idType: "",
+    idNumber: idUser,
   });
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setForm({
       ...form,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleAdditionalInputChange = (
+    event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
+  ) => {
+    setData({
+      ...data,
       [event.target.name]: event.target.value,
     });
   };
@@ -52,18 +69,20 @@ export default function Register() {
             Register
           </h2>
         </div>
+
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {/* <div className="mt-4">
+          <div className="mt-4">
             <label>
               Full Name:
               <input
                 type="text"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={form.fullName}
-                onChange={handleInputChange}
+                value={data.fullName}
+                onChange={(e) => handleAdditionalInputChange(e)}
+                name="fullName"
               />
             </label>
-          </div> */}
+          </div>
           <div className="mt-4">
             <label>
               Email:
@@ -100,15 +119,19 @@ export default function Register() {
               />
             </label>
           </div>
-          {/* <div className="mt-4">
+          <div className="mt-4">
             <label>
               Type of Identification:
-              <input
-                type="text"
+              <select
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={form.idType}
-                onChange={handleInputChange}
-              />
+                value={data.idType}
+                onChange={(e) => handleAdditionalInputChange(e)}
+                name="idType"
+              >
+                <option value="cedula">Cedula</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
             </label>
           </div>
           <div className="mt-4">
@@ -117,11 +140,12 @@ export default function Register() {
               <input
                 type="text"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={form.idNumber}
-                onChange={handleInputChange}
+                value={data.idNumber}
+                onChange={(e) => handleAdditionalInputChange(e)}
+                name="idNumber"
               />
             </label>
-          </div> */}
+          </div>
 
           <div className="mt-4">
             <button
