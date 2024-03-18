@@ -2,36 +2,21 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { auth } from "./../../firebaseClient";
 
 interface UserProfile {
   email: string;
   fullName: string;
-  password: string;
-  confirmPassword: string;
-  idType: string;
-  idNumber: string;
 }
 
 const ProfilePage: React.FC = () => {
+  const user = auth.currentUser;
+  console.log(user);
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "",
-    password: "",
-    confirmPassword: "",
-    idType: "",
-    idNumber: "",
-    email: "",
+    email: user ? user.email : "",
   });
 
-  React.useEffect(() => {
-    // Fetch user profile from your API or service
-    // This is just a placeholder, replace with your actual API call
-    /*
-        fetch('/api/user/profile')
-            .then(response => response.json())
-            .then(data => setUserProfile(data))
-            .catch(error => console.error('Error:', error));
-            */
-  }, []);
 
   if (!userProfile) {
     return <div>Loading...</div>;
@@ -55,10 +40,9 @@ const ProfilePage: React.FC = () => {
           />
         </div>
 
-        <p>Full Name: {userProfile.fullName}</p>
+        
         <p>Email: {userProfile.email}</p>
-        <p>ID Type: {userProfile.idType}</p>
-        <p>ID Number: {userProfile.idNumber}</p>
+        
       </div>
     </main>
   );

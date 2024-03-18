@@ -1,48 +1,41 @@
 "use client";
 
-import { auth } from "./../../firebaseClient";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
-interface UserProfile {
+interface User {
   email: string;
   password: string;
   confirmPassword: string;
-}
-
-interface AdditionalData {
   fullName: string;
   idType: string;
   idNumber: string;
+  address: string;
 }
 
 export default function Register() {
+  const router = useRouter();
+  const [error, setError] = useState("");
+
   const [idUser, setIdUser] = useState<string>("");
   const [isValid, setIsValid] = useState<boolean>(false);
-  const [form, setForm] = useState<UserProfile>({
+  const [form, setForm] = useState<User>({
     password: "",
     confirmPassword: "",
     email: "",
-  });
-
-  const [data, setData] = useState<AdditionalData>({
     fullName: "",
     idType: "",
-    idNumber: idUser,
+    idNumber: "",
+    address: "",
   });
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setForm({
-      ...form,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const handleAdditionalInputChange = (
+  const handleInputChange = (
     event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
-    setData({
-      ...data,
+    console.log(": ", event.target.name);
+    console.log(": ", event.target.value);
+    setForm({
+      ...form,
       [event.target.name]: event.target.value,
     });
   };
@@ -50,14 +43,45 @@ export default function Register() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     console.log(form);
+
     if (form.password === form.confirmPassword) {
       try {
-        await createUserWithEmailAndPassword(auth, form.email, form.password);
-      } catch {
-        console.log("Sorry, something went wrong. Please try again.");
+        const response = await fetch("http://localhost:3000/v1/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            password: form.password,
+            name: form.fullName,
+            documentType: form.idType,
+            documentNumber: form.idNumber,
+            address: form.address,
+          }),
+        });
+
+        if (response.status === 201) {
+          router.push("/");
+        }
+        if (response.status === 202) {
+          setError(
+            "The request is being processed, the response will be sent to mail"
+          );
+        } else if (response.status === 400) {
+          setError("Bad request! ,Failed to sign up");
+        } else if (response.status === 409) {
+          setError("The user is already registered with another operator.");
+        } else if (response.status === 500) {
+          setError("Internal server error.");
+        } else {
+          setError("Failed to sign up");
+        }
+      } catch (error) {
+        setError("Sorry, something went wrong. Please try again.");
       }
     } else {
-      console.log("Passwords don't match. Please try again.");
+      setError("Passwords don't match. Please try again.");
     }
   };
 
@@ -77,8 +101,8 @@ export default function Register() {
               <input
                 type="text"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={data.fullName}
-                onChange={(e) => handleAdditionalInputChange(e)}
+                value={form.fullName}
+                onChange={(e) => handleInputChange(e)}
                 name="fullName"
               />
             </label>
@@ -123,14 +147,14 @@ export default function Register() {
             <label>
               Type of Identification:
               <select
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={data.idType}
-                onChange={(e) => handleAdditionalInputChange(e)}
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-none  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 rounded-t-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="idType"
+                onChange={(e) => handleInputChange(e)}
               >
-                <option value="cedula">Cedula</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="tarjeta">Tarjeta</option>
+                <option value="CC">Cedula</option>
+                <option value="CE">Cedula Extranjeria</option>
+                <option value="TI">Tarjeta Identidad</option>
+                <option value="PP">Pasaporte</option>
               </select>
             </label>
           </div>
@@ -140,13 +164,25 @@ export default function Register() {
               <input
                 type="text"
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                value={data.idNumber}
-                onChange={(e) => handleAdditionalInputChange(e)}
+                value={form.idNumber}
+                onChange={(e) => handleInputChange(e)}
                 name="idNumber"
               />
             </label>
           </div>
 
+          <div className="mt-4">
+            <label>
+              Address:
+              <input
+                type="text"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                value={form.address}
+                onChange={(e) => handleInputChange(e)}
+                name="address"
+              />
+            </label>
+          </div>
           <div className="mt-4">
             <button
               type="submit"
@@ -156,6 +192,9 @@ export default function Register() {
             </button>
           </div>
         </form>
+        <div>
+          <p className="text-center text-red-500">{error}</p>
+        </div>
       </div>
     </main>
   );

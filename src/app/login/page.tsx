@@ -3,9 +3,13 @@
 import { auth } from "./../../firebaseClient";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import React, { ChangeEvent, FormEvent, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
+  const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setForm({
@@ -17,7 +21,12 @@ const LoginPage = () => {
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     console.log(form);
-    await signInWithEmailAndPassword(auth, form.email, form.password);
+    try {
+      await signInWithEmailAndPassword(auth, form.email, form.password);
+      router.push("/profile");
+    } catch (err) {
+     setError(err.message);
+    }
   };
 
   return (
@@ -68,6 +77,21 @@ const LoginPage = () => {
             </div>
           </div>
         </form>
+        <div>
+          <p className="text-red-500">{error}</p>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <p className="p-2">Don't have an account?</p>
+          <div className="text-sm w-full">
+            <Link
+              href="/register"
+              className="group relative w-full flex justify-center py-2 px-4 text-sm font-medium rounded-md text-sky-500 border-sky-500 hover:bg-sky-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 border-2"
+            >
+              Register
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
