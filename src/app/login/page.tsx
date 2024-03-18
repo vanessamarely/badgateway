@@ -24,8 +24,8 @@ const LoginPage = () => {
     try {
       await signInWithEmailAndPassword(auth, form.email, form.password);
       router.push("/profile");
-    } catch (err) {
-     setError(err.message);
+    } catch (error) {
+      setError("An error occurred. Please try again.");
     }
   };
 
@@ -82,7 +82,7 @@ const LoginPage = () => {
         </div>
 
         <div className="flex flex-col items-center">
-          <p className="p-2">Don't have an account?</p>
+          <p className="p-2">Don&apos;t have an account?</p>
           <div className="text-sm w-full">
             <Link
               href="/register"

@@ -1,6 +1,5 @@
 import Image from "next/image";
 
-import { getServerAuthSession } from "./../server/auth";
 import Link from "next/link";
 
 

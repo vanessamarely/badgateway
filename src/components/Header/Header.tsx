@@ -15,7 +15,7 @@ const Header = () => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
-        const uid = user.uid;
+        const uid = user.uid as any;
         setUser(uid);
       } else {
         // User is signed out
