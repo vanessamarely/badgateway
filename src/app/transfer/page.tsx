@@ -3,6 +3,7 @@ import { auth } from "./../../firebaseClient";
 import React, { useState, useEffect } from "react";
 import { apiGateway } from "./../../utils/urls";
 import { useRouter } from "next/navigation";
+import { deleteUser } from "firebase/auth";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -91,6 +92,17 @@ const Page = () => {
           console.log("Transfer successful:");
           setMessage("Transfer successful");
           toast.success("Transfer successful");
+          if (user) {
+            deleteUser(user)
+              .then(() => {
+                toast.success("We hope to see you soon");
+                setMessage("We hope to see you soon");
+              })
+              .catch((error) => {
+                toast.error("Error deleting user");
+                setError("Error deleting user");
+              });
+          }
         } else if (response.status === 202) {
           console.log(
             "The request is being processed, the response will be sent to mail"
