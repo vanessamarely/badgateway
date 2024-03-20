@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { auth } from "./../../firebaseClient";
+import { useRouter } from "next/navigation";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,6 +14,7 @@ interface UserProfile {
 }
 
 const ProfilePage: React.FC = () => {
+  const router = useRouter();
   const user = auth.currentUser;
   console.log(user);
   const [userProfile, setUserProfile] = useState<UserProfile>({
@@ -20,10 +22,13 @@ const ProfilePage: React.FC = () => {
     email: user ? user.email : "",
   });
 
-
   if (!userProfile) {
     return <div>Loading...</div>;
   }
+
+  const handleChangePassword = () => {
+    router.push("/change-password");
+  };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -45,6 +50,15 @@ const ProfilePage: React.FC = () => {
         </div>
 
         <p>Email: {userProfile.email}</p>
+        <div>
+          <button
+            type="button"
+            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-sky-500 hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
+            onClick={handleChangePassword}
+          >
+            Change Password
+          </button>
+        </div>
       </div>
     </main>
   );
