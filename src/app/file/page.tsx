@@ -66,7 +66,6 @@ export default function FileUpload() {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          mode: "no-cors",
           body: formData,
         }
       );

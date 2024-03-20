@@ -70,7 +70,13 @@ const Page = () => {
     if (selectedOperator) {
       try {
         const response = await fetch(
-          `${apiGateway}/v1/transfer?email=${email}&operatorId=${selectedOperator._id}`
+          `${apiGateway}/v1/users/transfer?email=${email}&operatorId=${selectedOperator._id}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         console.log(response);
@@ -93,12 +99,14 @@ const Page = () => {
           setMessage("Transfer successful");
           toast.success("Transfer successful");
           if (user) {
+            console.log(user)
             deleteUser(user)
               .then(() => {
                 toast.success("We hope to see you soon");
                 setMessage("We hope to see you soon");
               })
               .catch((error) => {
+                console.log("Error deleting user", error);
                 toast.error("Error deleting user");
                 setError("Error deleting user");
               });
