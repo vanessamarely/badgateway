@@ -10,7 +10,6 @@ import "react-toastify/dist/ReactToastify.css";
 const ChangePassword = () => {
   const router = useRouter();
   const [form, setForm] = useState({
-    email: "",
     password: "",
     confirmPassword: "",
   });
@@ -34,7 +33,7 @@ const ChangePassword = () => {
         toast.error("User not found");
         return;
       }
-console.log(form.password);
+      console.log(form.password);
       try {
         
         await updatePassword(user, form.password);
@@ -61,20 +60,7 @@ console.log(form.password);
         </div>
         <form onSubmit={handleChangePassword}>
           <div className="rounded-md shadow-sm">
-            <div className="mt-4">
-              <label htmlFor="email">email</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
-                placeholder="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={handleInputChange}
-              />
-            </div>
+           
             <div className="mt-4">
               <label htmlFor="password">Password</label>
               <input
