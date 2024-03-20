@@ -1,29 +1,28 @@
 "use client";
 import { auth } from "./../../firebaseClient";
 import React, { useState, useEffect } from "react";
+import { apiGateway } from "./../../utils/urls";
+
+type Operator = {
+  _id: number;
+  operatorName: string;
+  transferAPIURL: string;
+};
 
 const Page = () => {
   const user = auth.currentUser;
   const email = user ? user.email : "";
-  const [selectedOperator, setSelectedOperator] = useState(null as any);
+  const [selectedOperator, setSelectedOperator] = useState<Operator>(null as any);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [operators, setOperators] = useState<
-    Array<{ id: number; name: string }>
-  >([]);
+  const [operators, setOperators] = useState<Array<Operator>>([]);
 
   useEffect(() => {
     const handleCallOperators = async () => {
-      const response = await fetch("http://localhost:3008/v1/operators", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        mode: "no-cors",
-      });
-
+      const response = await fetch(`${apiGateway}/v1/operators`);
+      console.log(response);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -37,6 +36,7 @@ const Page = () => {
       }
 
       const data = await response.json();
+      console.log("Operators:", data);
       setOperators(data);
     };
     handleCallOperators();
@@ -44,8 +44,9 @@ const Page = () => {
 
   function handleSelect(event: any) {
     const operator = operators.find(
-      (operator) => operator.id === parseInt(event.target.value)
+      (operator) => operator._id === event.target.value
     );
+    console.log(operator);
     setSelectedOperator(operator as any);
   }
 
@@ -53,13 +54,13 @@ const Page = () => {
     if (selectedOperator) {
       try {
         const response = await fetch(
-          `http://localhost:3008/v1/transfer?email=${email}&operatorId=${selectedOperator.id}`,
+          `${apiGateway}/v1/transfer?email=${email}&operatorId=${selectedOperator._id}`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ operatorId: selectedOperator.id }),
+            body: JSON.stringify({ operatorId: selectedOperator._id }),
           }
         );
 
@@ -126,21 +127,17 @@ const Page = () => {
         >
           <option>Select an operator</option>
           {operators.map((operator) => (
-            <option key={operator.id} value={operator.id}>
-              {operator.name}
+            <option key={operator._id} value={operator._id}>
+              {operator.operatorName}
             </option>
           ))}
         </select>
-        {selectedOperator && <p>You selected: {selectedOperator.name}</p>}
-        {selectedOperator && (
-          <p>The operator {selectedOperator?.name} is selected.</p>
-        )}
-        <button
-          type="button"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-        >
-          Transfer data
-        </button>
+        {selectedOperator && selectedOperator?.operatorName ? (
+          <p className="text-green-500">
+            The operator {selectedOperator?.operatorName} is selected.
+          </p>
+        ): null}
+
       </div>
       <div>
         <p className="text-red-500">{error}</p>

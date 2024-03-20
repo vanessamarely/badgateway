@@ -2,6 +2,9 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiGateway } from "./../../utils/urls";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface User {
   email: string;
@@ -17,8 +20,8 @@ export default function Register() {
   const router = useRouter();
   const [error, setError] = useState("");
 
-  const [idUser, setIdUser] = useState<string>("");
-  const [isValid, setIsValid] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+
   const [form, setForm] = useState<User>({
     password: "",
     confirmPassword: "",
@@ -32,7 +35,6 @@ export default function Register() {
   const handleInputChange = (
     event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
-
     setForm({
       ...form,
       [event.target.name]: event.target.value,
@@ -51,11 +53,13 @@ export default function Register() {
         form.fullName === ""
       ) {
         setError("Please fill all the fields");
+        setMessage("");
         return;
       }
-      
+
       try {
-        const response = await fetch("http://localhost:3000/v1/users", {
+        console.log(apiGateway);
+        const response = await fetch(`${apiGateway}/v1/users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -70,32 +74,48 @@ export default function Register() {
           }),
         });
 
+        console.log(response);
+
         if (response.status === 201) {
-          router.push("/");
+          setMessage("User created successfully");
+          toast.success("User created successfully");
+          setTimeout(() => {
+            router.push("/login");
+          }, 5000);
         }
         if (response.status === 202) {
           setError(
             "The request is being processed, the response will be sent to mail"
           );
+          toast.error(
+            "The request is being processed, the response will be sent to mail"
+          );
         } else if (response.status === 400) {
           setError("Bad request! ,Failed to sign up");
+          toast.error(error);
         } else if (response.status === 409) {
           setError("The user is already registered with another operator.");
+          toast.error(error);
         } else if (response.status === 500) {
           setError("Internal server error.");
+          toast.error(error);
         } else {
           setError("Failed to sign up");
+          toast.error(error);
         }
-      } catch (error) {
+      } catch {
         setError("Sorry, something went wrong. Please try again.");
+        toast.error(error);
       }
     } else {
       setError("Passwords don't match. Please try again.");
+      toast.error(error);
     }
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -109,10 +129,11 @@ export default function Register() {
               Full Name:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.fullName}
                 onChange={(e) => handleInputChange(e)}
                 name="fullName"
+                required
               />
             </label>
           </div>
@@ -121,10 +142,11 @@ export default function Register() {
               Email:
               <input
                 type="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none roundedrelative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.email}
                 onChange={(e) => handleInputChange(e)}
                 name="email"
+                required
               />
             </label>
           </div>
@@ -133,10 +155,11 @@ export default function Register() {
               Password:
               <input
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.password}
                 onChange={handleInputChange}
                 name="password"
+                required
               />
             </label>
           </div>
@@ -145,10 +168,11 @@ export default function Register() {
               Confirm Password:
               <input
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.confirmPassword}
                 onChange={handleInputChange}
                 name="confirmPassword"
+                required
               />
             </label>
           </div>
@@ -156,9 +180,10 @@ export default function Register() {
             <label>
               Identification Type:
               <select
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-none  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 rounded-t-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 rounded-t-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="idType"
                 onChange={(e) => handleInputChange(e)}
+                required
               >
                 <option value="">Select an option</option>
                 <option value="CC">Cedula</option>
@@ -173,10 +198,11 @@ export default function Register() {
               Number of Identification:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.idNumber}
                 onChange={(e) => handleInputChange(e)}
                 name="idNumber"
+                required
               />
             </label>
           </div>
@@ -186,10 +212,11 @@ export default function Register() {
               Address:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
+                className="appearance-none  relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.address}
                 onChange={(e) => handleInputChange(e)}
                 name="address"
+                required
               />
             </label>
           </div>
@@ -204,6 +231,7 @@ export default function Register() {
         </form>
         <div>
           <p className="text-center text-red-500">{error}</p>
+          <p className="text-center text-green-500">{message}</p>
         </div>
       </div>
     </main>

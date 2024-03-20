@@ -1,6 +1,7 @@
 "use client";
 import { auth } from "./../../firebaseClient";
 import React, { useState, useEffect } from "react";
+import { apiGateway } from "./../../utils/urls";
 
 export default function FileUpload() {
   const user = auth.currentUser;
@@ -14,16 +15,13 @@ export default function FileUpload() {
 
   const fetchFilesFromApi = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:3004/v1/files?email=${email}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          mode: "no-cors",
-        }
-      );
+      const response = await fetch(`${apiGateway}/v1/files?email=${email}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        mode: "no-cors",
+      });
       if (!response.ok) {
         throw new Error("Error fetching files");
       }
@@ -52,7 +50,7 @@ export default function FileUpload() {
 
     try {
       const response = await fetch(
-        `http://localhost:3004/v1/files?type=${file.type}&email=${email}`,
+        `${apiGateway}/v1/files?type=${file.type}&email=${email}`,
         {
           method: "POST",
           headers: {
@@ -155,6 +153,10 @@ export default function FileUpload() {
     // Here you can handle the file edit. For example, you could open a modal to edit the file name or type.
   };
 
+  const handleSelectedDocumentType = (event: any) => {
+    console.log(event.target.value);
+  };
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -191,6 +193,21 @@ export default function FileUpload() {
               )}
             </div>
           )}
+
+          <select
+            name="documentType"
+            id="documentType"
+            autoComplete="documentType"
+            onChange={handleSelectedDocumentType}
+            className="mt-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 rounded-t-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          >
+            <option>Select the document type</option>
+            <option value="CC">cedula</option>
+            <option value="Pasaporte">Pasaporte</option>
+            <option value="registro">registro</option>
+            <option value="otro">Otro</option>
+          </select>
+
           <button
             onClick={handleFileUpload}
             className="mt-3 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
@@ -201,6 +218,7 @@ export default function FileUpload() {
         <div>
           <p className="text-red-500">{error}</p>
         </div>
+
         {/* <div>
           <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
             Multiple Files Upload
