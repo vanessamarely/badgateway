@@ -2,7 +2,7 @@
 
 import { auth } from "./../../firebaseClient";
 import { updatePassword } from "firebase/auth";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,6 +13,7 @@ const ChangePassword = () => {
     password: "",
     confirmPassword: "",
   });
+
   const [error, setError] = useState("");
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +36,6 @@ const ChangePassword = () => {
       }
       console.log(form.password);
       try {
-        
         await updatePassword(user, form.password);
         toast.success("Password Updated");
         router.push("/profile");
@@ -49,6 +49,13 @@ const ChangePassword = () => {
     }
   };
 
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) {
+      router.push("/login");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <ToastContainer />
@@ -60,7 +67,6 @@ const ChangePassword = () => {
         </div>
         <form onSubmit={handleChangePassword}>
           <div className="rounded-md shadow-sm">
-           
             <div className="mt-4">
               <label htmlFor="password">Password</label>
               <input

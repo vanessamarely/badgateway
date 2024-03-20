@@ -2,8 +2,14 @@
 import { auth } from "./../../firebaseClient";
 import React, { useState, useEffect } from "react";
 import { apiGateway } from "./../../utils/urls";
+import { useRouter } from "next/navigation";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 export default function FileUpload() {
+  const router = useRouter();
   const user = auth.currentUser;
   const email = user ? user.email : "";
   const [selectedFile, setSelectedFile] = useState(null as any);
@@ -12,20 +18,15 @@ export default function FileUpload() {
   const [error, setError] = useState("");
   const [files, setFiles] = useState([] as any);
   const [errorFiles, setErrorFiles] = useState("" as any);
+  const [selectedDocumentType, setSelectedDocumentType] = useState("");
 
   const fetchFilesFromApi = async () => {
     try {
-      const response = await fetch(`${apiGateway}/v1/files?email=${email}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        mode: "no-cors",
-      });
+      const response = await fetch(`${apiGateway}/v1/files?email=${email}`);
       if (!response.ok) {
         throw new Error("Error fetching files");
       }
-
+      console.log(response);
       if (response.status === 400) {
         console.log("Bad Request");
         setErrorFiles("Bad Request");
@@ -35,6 +36,7 @@ export default function FileUpload() {
       }
 
       const data = await response.json();
+      console.log("Files:", data);
       setFiles(data);
     } catch (error) {
       setErrorFiles("Error fetching files");
@@ -42,15 +44,23 @@ export default function FileUpload() {
   };
 
   useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) {
+      router.push("/login");
+    }
+  }, []);
+
+  useEffect(() => {
     fetchFilesFromApi();
   }, []);
   const postFileToApi = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-
+    console.log(selectedDocumentType);
+    console.log(formData);
     try {
       const response = await fetch(
-        `${apiGateway}/v1/files?type=${file.type}&email=${email}`,
+        `${apiGateway}/v1/files?type=${selectedDocumentType}&email=${email}`,
         {
           method: "POST",
           headers: {
@@ -60,6 +70,8 @@ export default function FileUpload() {
           body: formData,
         }
       );
+
+      console.log(response);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -144,21 +156,14 @@ export default function FileUpload() {
     setSelectedFiles(files);
   };
 
-  const handleEditFile = (index: number) => {
-    if (!selectedFiles) {
-      return;
-    }
-    let file = selectedFiles[index];
-    console.log(file);
-    // Here you can handle the file edit. For example, you could open a modal to edit the file name or type.
-  };
-
   const handleSelectedDocumentType = (event: any) => {
     console.log(event.target.value);
+    setSelectedDocumentType(event.target.value);
   };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <ToastContainer />
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
