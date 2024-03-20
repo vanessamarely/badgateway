@@ -32,8 +32,7 @@ export default function Register() {
   const handleInputChange = (
     event: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
-    console.log(": ", event.target.name);
-    console.log(": ", event.target.value);
+
     setForm({
       ...form,
       [event.target.name]: event.target.value,
@@ -45,6 +44,16 @@ export default function Register() {
     console.log(form);
 
     if (form.password === form.confirmPassword) {
+      if (
+        form.idType === "" ||
+        form.idNumber === "" ||
+        form.address === "" ||
+        form.fullName === ""
+      ) {
+        setError("Please fill all the fields");
+        return;
+      }
+      
       try {
         const response = await fetch("http://localhost:3000/v1/users", {
           method: "POST",
@@ -100,7 +109,7 @@ export default function Register() {
               Full Name:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.fullName}
                 onChange={(e) => handleInputChange(e)}
                 name="fullName"
@@ -112,7 +121,7 @@ export default function Register() {
               Email:
               <input
                 type="email"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.email}
                 onChange={(e) => handleInputChange(e)}
                 name="email"
@@ -124,7 +133,7 @@ export default function Register() {
               Password:
               <input
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.password}
                 onChange={handleInputChange}
                 name="password"
@@ -136,7 +145,7 @@ export default function Register() {
               Confirm Password:
               <input
                 type="password"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.confirmPassword}
                 onChange={handleInputChange}
                 name="confirmPassword"
@@ -145,12 +154,13 @@ export default function Register() {
           </div>
           <div className="mt-4">
             <label>
-              Type of Identification:
+              Identification Type:
               <select
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-none  focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 rounded-t-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 name="idType"
                 onChange={(e) => handleInputChange(e)}
               >
+                <option value="">Select an option</option>
                 <option value="CC">Cedula</option>
                 <option value="CE">Cedula Extranjeria</option>
                 <option value="TI">Tarjeta Identidad</option>
@@ -163,7 +173,7 @@ export default function Register() {
               Number of Identification:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.idNumber}
                 onChange={(e) => handleInputChange(e)}
                 name="idNumber"
@@ -176,7 +186,7 @@ export default function Register() {
               Address:
               <input
                 type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 focus:z-10 sm:text-sm"
                 value={form.address}
                 onChange={(e) => handleInputChange(e)}
                 name="address"

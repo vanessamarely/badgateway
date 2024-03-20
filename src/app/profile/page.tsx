@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { auth } from "./../../firebaseClient";
 
+
 interface UserProfile {
   email: any;
   fullName: string;

@@ -1,13 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
 .button-primary {
   background-color: #2bbdee;
   border-color: #00d1f7;
@@ -38,4 +28,3 @@
   font-weight: 600;
   transition: all 0.3s ease;
 }
-

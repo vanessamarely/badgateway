@@ -1,18 +1,97 @@
 "use client";
-
+import { auth } from "./../../firebaseClient";
 import React, { useState, useEffect } from "react";
 
 export default function FileUpload() {
-  const [selectedFile, setSelectedFile] = useState( null as any);
+  const user = auth.currentUser;
+  const email = user ? user.email : "";
+  const [selectedFile, setSelectedFile] = useState(null as any);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState( [] as any);
-  const [file, setFile] = useState({
-    name: "",
-    type: "",
-    id: 0,
-  });
+  const [selectedFiles, setSelectedFiles] = useState([] as any);
+  const [error, setError] = useState("");
+  const [files, setFiles] = useState([] as any);
+  const [errorFiles, setErrorFiles] = useState("" as any);
 
-  const handleFileChange = (event: any) => {
+  const fetchFilesFromApi = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:3004/v1/files?email=${email}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          mode: "no-cors",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Error fetching files");
+      }
+
+      if (response.status === 400) {
+        console.log("Bad Request");
+        setErrorFiles("Bad Request");
+      } else if (response.status === 500) {
+        console.log("Internal Server Error");
+        setErrorFiles("Internal Server Error");
+      }
+
+      const data = await response.json();
+      setFiles(data);
+    } catch (error) {
+      setErrorFiles("Error fetching files");
+    }
+  };
+
+  useEffect(() => {
+    fetchFilesFromApi();
+  }, []);
+  const postFileToApi = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(
+        `http://localhost:3004/v1/files?type=${file.type}&email=${email}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          mode: "no-cors",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      if (response.status === 201) {
+        console.log("File uploaded successfully!");
+      } else if (response.status === 202) {
+        console.log(
+          "The request is being processed, the response will be sent to mail"
+        );
+        setError(
+          "The request is being processed, the response will be sent to mail"
+        );
+      } else if (response.status === 400) {
+        console.log("Bad Request");
+      } else if (response.status === 500) {
+        console.log("Internal Server Error");
+      } else {
+        console.log("Bad Gateway");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("There was a problem with the fetch operation: ", error);
+    }
+  };
+
+  function handleFileChange(event: any) {
     let file = event.target.files[0];
 
     // Check the file size (200KB = 200 * 1024 bytes)
@@ -22,37 +101,40 @@ export default function FileUpload() {
     }
 
     // Check the file type
-    if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-      setErrorMessage("Invalid file type. Only JPEG, PNG and PDF are allowed.");
-      return;
-    }
+    // if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
+    //   setErrorMessage("Invalid file type. Only JPEG, PNG and PDF are allowed.");
+    //   return;
+    // }
 
     // If the file passes all checks, clear the error message and set the selected file
     setErrorMessage("");
     setSelectedFile(file);
-  };
+  }
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
       return;
     }
     console.log(selectedFile);
-    // Here you can handle the file upload. For example, you could send the file to an API or upload it to a cloud storage service.
+
+    postFileToApi(selectedFile);
   };
 
-  const handleMultipleFilesUpload = async () => {
-    if (!selectedFiles) {
-      return;
-    }
-    console.log(selectedFiles);
-    // Here you can handle the file upload. For example, you could send the file to an API or upload it to a cloud storage service.
-  };
+  // const handleMultipleFilesUpload = async () => {
+  //   if (!selectedFiles) {
+  //     return;
+  //   }
+  //   console.log(selectedFiles);
 
-  const handleMultipleFilesChange = (event: any) => {
-    let files = event.target.files;
-    let filesArray = Array.from(files);
-    setSelectedFiles(filesArray as any);
-  };
+  //   postFileToApi(selectedFiles);
+  //   // Here you can handle the file upload. For example, you could send the file to an API or upload it to a cloud storage service.
+  // };
+
+  // const handleMultipleFilesChange = (event: any) => {
+  //   let files = event.target.files;
+  //   let filesArray = Array.from(files);
+  //   setSelectedFiles(filesArray as any);
+  // };
 
   const handleRemoveFile = (index: number) => {
     let files = selectedFiles;
@@ -73,15 +155,6 @@ export default function FileUpload() {
     // Here you can handle the file edit. For example, you could open a modal to edit the file name or type.
   };
 
-  useEffect(() => {
-    const fileObject = {
-      name: "file1",
-      type: "image/jpeg",
-      id: 1,
-    };
-    setFile(fileObject);
-  }, []);
-
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -94,7 +167,7 @@ export default function FileUpload() {
           <input
             type="file"
             onChange={handleFileChange}
-            className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
           />
 
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
@@ -103,7 +176,7 @@ export default function FileUpload() {
             <div className="flex flex-col">
               <button
                 onClick={() => setSelectedFile(undefined)}
-                className="self-end px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="mt-3 self-end px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 Delete
               </button>
@@ -120,12 +193,15 @@ export default function FileUpload() {
           )}
           <button
             onClick={handleFileUpload}
-            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="mt-3 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
           >
             Upload
           </button>
         </div>
         <div>
+          <p className="text-red-500">{error}</p>
+        </div>
+        {/* <div>
           <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
             Multiple Files Upload
           </h2>
@@ -133,7 +209,7 @@ export default function FileUpload() {
             type="file"
             onChange={handleMultipleFilesChange}
             multiple
-            className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
           />
           {errorMessage && <p className="text-red-500">{errorMessage}</p>}
           {selectedFiles &&
@@ -158,11 +234,11 @@ export default function FileUpload() {
             ))}
           <button
             onClick={handleMultipleFilesUpload}
-            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
           >
             Upload All
           </button>
-        </div>
+        </div> */}
         <div>
           <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
             Uploaded Files
@@ -175,20 +251,25 @@ export default function FileUpload() {
               </tr>
             </thead>
             <tbody>
-              {/* Here you would map over the files uploaded to your database and create a row for each one */}
-              {/* This is just a placeholder for the purpose of this example */}
-              <tr>
-                <td className="border px-4 py-2"> {file.name}</td>
-                <td className="border px-4 py-2">{file.type}</td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => handleEditFile(file.id)}
-                    className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
+              {files ? (
+                files.length > 0 &&
+                files.map((file: any, index: number) => (
+                  <tr key={index}>
+                    <td className="border px-4 py-2">{file.name}</td>
+                    <td className="border px-4 py-2">{file.type}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td className="border px-4 py-2">
+                    {errorFiles ? (
+                      <p className="text-red-500">{errorFiles}</p>
+                    ) : (
+                      "No files uploaded"
+                    )}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
