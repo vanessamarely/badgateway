@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import axios from "axios";
+import FormData from "form-data";
 
 export default function FileUpload() {
   const router = useRouter();
@@ -53,50 +55,70 @@ export default function FileUpload() {
   useEffect(() => {
     fetchFilesFromApi();
   }, []);
+
   const postFileToApi = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
     console.log(selectedDocumentType);
     console.log(formData);
+
     try {
-      const response = await fetch(
+      // const response = await fetch(
+      //   `${apiGateway}/v1/files?type=${selectedDocumentType}&email=${email}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //     body: formData,
+      //   }
+      // );
+
+      const response = await axios.post(
         `${apiGateway}/v1/files?type=${selectedDocumentType}&email=${email}`,
+        formData,
         {
-          method: "POST",
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          body: formData,
         }
       );
 
       console.log(response);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       if (response.status === 201) {
         console.log("File uploaded successfully!");
+        toast.success("File uploaded successfully!");
       } else if (response.status === 202) {
         console.log(
+          "The request is being processed, the response will be sent to mail"
+        );
+        toast.success(
           "The request is being processed, the response will be sent to mail"
         );
         setError(
           "The request is being processed, the response will be sent to mail"
         );
+        toast.error(error)
       } else if (response.status === 400) {
         console.log("Bad Request");
+        toast.error(error);
       } else if (response.status === 500) {
         console.log("Internal Server Error");
+        toast.error(error);
       } else {
         console.log("Bad Gateway");
+        toast.error(error);
       }
 
-      const data = await response.json();
+      const data = await response;
+      console.log(data)
       return data;
-    } catch (error) {
-      console.error("There was a problem with the fetch operation: ", error);
+    } catch  {
+      console.error("There was a problem with the fetch operation");
+      setError("There was a problem with the fetch operation");
+      toast.error(error);
     }
   };
 
