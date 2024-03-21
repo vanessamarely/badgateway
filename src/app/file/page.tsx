@@ -21,26 +21,36 @@ export default function FileUpload() {
   const [files, setFiles] = useState([] as any);
   const [errorFiles, setErrorFiles] = useState("" as any);
   const [selectedDocumentType, setSelectedDocumentType] = useState("");
-  
+  const [images, setImages] = useState([] as any);
 
   const fetchFilesFromApi = async () => {
     try {
       const response = await fetch(`${apiGateway}/v1/files?email=${email}`);
       if (!response.ok) {
+        toast.error(error);
         throw new Error("Error fetching files");
       }
       console.log(response);
       if (response.status === 400) {
         console.log("Bad Request");
         setErrorFiles("Bad Request");
+        toast.error(error);
       } else if (response.status === 500) {
         console.log("Internal Server Error");
         setErrorFiles("Internal Server Error");
+        toast.error(error);
       }
 
       const data = await response.json();
       console.log("Files:", data);
       setFiles(data);
+
+      let urlImages = [];
+      for (let file of data) {
+        const url = await getURL(file.fileID);
+        urlImages[file.fileID] = url;
+      }
+      setImages(urlImages);
     } catch (error) {
       setErrorFiles("Error fetching files");
     }
@@ -134,28 +144,33 @@ export default function FileUpload() {
     postFileToApi(selectedFile);
   };
 
-  
-
   const handleSelectedDocumentType = (event: any) => {
     console.log(event.target.value);
     setSelectedDocumentType(event.target.value);
   };
 
-  const getSignedUrl = async (file: File) => {
-    const storage = new Storage();
+  // const getSignedUrl = async (file: File) => {
+  //   const storage = new Storage();
 
-    const [url] = await storage
-      .bucket("bucket-service-file")
-      .file(file.name)
-      .getSignedUrl({
-        action: "write",
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 365,
-        contentType: "application/octet-stream",
-      });
+  //   const [url] = await storage
+  //     .bucket("bucket-service-file")
+  //     .file(file.name)
+  //     .getSignedUrl({
+  //       action: "write",
+  //       expires: Date.now() + 1000 * 60 * 60 * 24 * 365,
+  //       contentType: "application/octet-stream",
+  //     });
 
-    return url;
+  //   return url;
 
-  }
+  // }
+
+  const getURL = async (fileID: string) => {
+    const response = await fetch(`${apiGateway}/v1/files/${fileID}`);
+    const data = await response.json();
+    console.log(data);
+    return data;
+  };
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -239,24 +254,16 @@ export default function FileUpload() {
                     <td className="border px-4 py-2">{file?.originalName}</td>
                     <td className="border px-4 py-2">{file?.type}</td>
                     <td className="border px-4 py-2">
-                      {/* {file.mimeType.includes("image") ? (
-                        <Image
-                          src={file.url as string}
-                          alt="preview"
-                          className="mt-4"
-                          width={100}
-                          height={100}
-                        />
-                      ) : ( */}
-                      <a
-                      className="text-sky-500 hover:underline"
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        className="text-sky-500 hover:underline"
+                        type="button"
+                        onClick={async () => {
+                          const url = await getURL(file._id);
+                          window.open(url.url, "_blank");
+                        }}
                       >
                         Download
-                      </a>
-                      {/* )} */}
+                      </button>
                     </td>
                   </tr>
                 ))
