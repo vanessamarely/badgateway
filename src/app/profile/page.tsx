@@ -15,16 +15,15 @@ interface UserProfile {
 
 const ProfilePage: React.FC = () => {
   const router = useRouter();
-  const user = auth.currentUser;
-  console.log(user);
+  const [user, setUser] = useState(auth.currentUser);
+
   const [userProfile, setUserProfile] = useState<UserProfile>({
     fullName: "",
     email: user ? user.email : "",
   });
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
+    if (!localStorage.getItem("currentUser")) {
       router.push("/login");
     }
   }, []);

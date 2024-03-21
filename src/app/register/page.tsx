@@ -43,7 +43,6 @@ export default function Register() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(form);
 
     if (form.password === form.confirmPassword) {
       if (
@@ -58,7 +57,7 @@ export default function Register() {
       }
 
       try {
-        console.log(apiGateway);
+       
         const response = await fetch(`${apiGateway}/v1/users`, {
           method: "POST",
           headers: {
@@ -74,7 +73,6 @@ export default function Register() {
           }),
         });
 
-        console.log(response);
 
         if (response.status === 201) {
           setMessage("User created successfully");

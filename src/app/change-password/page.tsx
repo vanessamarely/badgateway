@@ -26,7 +26,7 @@ const ChangePassword = () => {
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
     if (form.password === form.confirmPassword) {
-      console.log(form);
+      
       const user = auth.currentUser;
 
       if (!user) {
@@ -34,7 +34,7 @@ const ChangePassword = () => {
         toast.error("User not found");
         return;
       }
-      console.log(form.password);
+    
       try {
         await updatePassword(user, form.password);
         toast.success("Password Updated");

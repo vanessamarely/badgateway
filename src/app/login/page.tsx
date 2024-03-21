@@ -23,10 +23,10 @@ const LoginPage = () => {
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
-    console.log(form);
+
     try {
       await signInWithEmailAndPassword(auth, form.email, form.password);
-       toast.success("Login successful");
+      toast.success("Login successful");
       router.push("/profile");
     } catch (error) {
       setError("An error occurred. Please try again.");

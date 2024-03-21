@@ -10,16 +10,19 @@ import { useRouter } from "next/navigation";
 const Header = () => {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
+        setIsLoggedIn(true);
         const uid = user.uid as any;
         setUser(uid);
+        localStorage.setItem("currentUser", JSON.stringify(user));
       } else {
         // User is signed out
-        console.log("user is logged out");
+        localStorage.removeItem("currentUser");
       }
     });
   }, []);

@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import Image from "next/image";
 import axios from "axios";
 import FormData from "form-data";
 
 export default function FileUpload() {
   const router = useRouter();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser);
   const email = user ? user.email : "";
   const [selectedFile, setSelectedFile] = useState(null as any);
   const [errorMessage, setErrorMessage] = useState("");
@@ -21,6 +21,7 @@ export default function FileUpload() {
   const [files, setFiles] = useState([] as any);
   const [errorFiles, setErrorFiles] = useState("" as any);
   const [selectedDocumentType, setSelectedDocumentType] = useState("");
+  
 
   const fetchFilesFromApi = async () => {
     try {
@@ -46,8 +47,7 @@ export default function FileUpload() {
   };
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
+    if (!localStorage.getItem("currentUser")) {
       router.push("/login");
     }
   }, []);
@@ -63,17 +63,6 @@ export default function FileUpload() {
     console.log(formData);
 
     try {
-      // const response = await fetch(
-      //   `${apiGateway}/v1/files?type=${selectedDocumentType}&email=${email}`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //     body: formData,
-      //   }
-      // );
-
       const response = await axios.post(
         `${apiGateway}/v1/files?type=${selectedDocumentType}&email=${email}`,
         formData,
@@ -86,8 +75,8 @@ export default function FileUpload() {
 
       console.log(response);
 
-
       if (response.status === 201) {
+        fetchFilesFromApi();
         console.log("File uploaded successfully!");
         toast.success("File uploaded successfully!");
       } else if (response.status === 202) {
@@ -100,7 +89,7 @@ export default function FileUpload() {
         setError(
           "The request is being processed, the response will be sent to mail"
         );
-        toast.error(error)
+        toast.error(error);
       } else if (response.status === 400) {
         console.log("Bad Request");
         toast.error(error);
@@ -113,9 +102,9 @@ export default function FileUpload() {
       }
 
       const data = await response;
-      console.log(data)
+      console.log(data);
       return data;
-    } catch  {
+    } catch {
       console.error("There was a problem with the fetch operation");
       setError("There was a problem with the fetch operation");
       toast.error(error);
@@ -131,12 +120,6 @@ export default function FileUpload() {
       return;
     }
 
-    // Check the file type
-    // if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type)) {
-    //   setErrorMessage("Invalid file type. Only JPEG, PNG and PDF are allowed.");
-    //   return;
-    // }
-
     // If the file passes all checks, clear the error message and set the selected file
     setErrorMessage("");
     setSelectedFile(file);
@@ -151,36 +134,28 @@ export default function FileUpload() {
     postFileToApi(selectedFile);
   };
 
-  // const handleMultipleFilesUpload = async () => {
-  //   if (!selectedFiles) {
-  //     return;
-  //   }
-  //   console.log(selectedFiles);
-
-  //   postFileToApi(selectedFiles);
-  //   // Here you can handle the file upload. For example, you could send the file to an API or upload it to a cloud storage service.
-  // };
-
-  // const handleMultipleFilesChange = (event: any) => {
-  //   let files = event.target.files;
-  //   let filesArray = Array.from(files);
-  //   setSelectedFiles(filesArray as any);
-  // };
-
-  const handleRemoveFile = (index: number) => {
-    let files = selectedFiles;
-    if (!files) {
-      return;
-    }
-
-    files.splice(index, 1);
-    setSelectedFiles(files);
-  };
+  
 
   const handleSelectedDocumentType = (event: any) => {
     console.log(event.target.value);
     setSelectedDocumentType(event.target.value);
   };
+
+  const getSignedUrl = async (file: File) => {
+    const storage = new Storage();
+
+    const [url] = await storage
+      .bucket("bucket-service-file")
+      .file(file.name)
+      .getSignedUrl({
+        action: "write",
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 365,
+        contentType: "application/octet-stream",
+      });
+
+    return url;
+
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -245,44 +220,6 @@ export default function FileUpload() {
           <p className="text-red-500">{error}</p>
         </div>
 
-        {/* <div>
-          <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
-            Multiple Files Upload
-          </h2>
-          <input
-            type="file"
-            onChange={handleMultipleFilesChange}
-            multiple
-            className="py-2 px-4 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-          />
-          {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-          {selectedFiles &&
-            selectedFiles.map((file: any, index: number) => (
-              <div key={index} className="flex flex-col">
-                <button
-                  onClick={() => handleRemoveFile(index)}
-                  className="self-end px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  Delete
-                </button>
-                {file?.type.includes("image") ? (
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt="preview"
-                    className="mt-4"
-                  />
-                ) : (
-                  <p className="mt-4">{file?.name}</p>
-                )}
-              </div>
-            ))}
-          <button
-            onClick={handleMultipleFilesUpload}
-            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500"
-          >
-            Upload All
-          </button>
-        </div> */}
         <div>
           <h2 className="mt-6 text-center text-2xl font-extrabold text-gray-900">
             Uploaded Files
@@ -297,10 +234,30 @@ export default function FileUpload() {
             <tbody>
               {files ? (
                 files.length > 0 &&
-                files.map((file: any, index: number) => (
-                  <tr key={index}>
-                    <td className="border px-4 py-2">{file.name}</td>
-                    <td className="border px-4 py-2">{file.type}</td>
+                files.map((file: any) => (
+                  <tr key={file?._id}>
+                    <td className="border px-4 py-2">{file?.originalName}</td>
+                    <td className="border px-4 py-2">{file?.type}</td>
+                    <td className="border px-4 py-2">
+                      {/* {file.mimeType.includes("image") ? (
+                        <Image
+                          src={file.url as string}
+                          alt="preview"
+                          className="mt-4"
+                          width={100}
+                          height={100}
+                        />
+                      ) : ( */}
+                      <a
+                      className="text-sky-500 hover:underline"
+                        href={file.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Download
+                      </a>
+                      {/* )} */}
+                    </td>
                   </tr>
                 ))
               ) : (

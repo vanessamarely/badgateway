@@ -16,7 +16,7 @@ type Operator = {
 
 const Page = () => {
   const router = useRouter();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser);
   const email = user ? user.email : "";
   const [selectedOperator, setSelectedOperator] = useState<Operator>(
     null as any
@@ -28,8 +28,7 @@ const Page = () => {
   const [operators, setOperators] = useState<Array<Operator>>([]);
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
+    if (!localStorage.getItem("currentUser")) {
       router.push("/login");
     }
   }, []);
@@ -37,22 +36,19 @@ const Page = () => {
   useEffect(() => {
     const handleCallOperators = async () => {
       const response = await fetch(`${apiGateway}/v1/operators`);
-      console.log(response);
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
       if (response.status === 400) {
-        console.log("Bad Request");
         setError("Bad Request");
         toast.error("Login successful");
       } else if (response.status === 500) {
-        console.log("Internal Server Error");
         setError("Internal Server Error");
       }
 
       const data = await response.json();
-      console.log("Operators:", data);
       setOperators(data);
     };
     handleCallOperators();
@@ -62,7 +58,6 @@ const Page = () => {
     const operator = operators.find(
       (operator) => operator._id === event.target.value
     );
-    console.log(operator);
     setSelectedOperator(operator as any);
   }
 
@@ -79,42 +74,32 @@ const Page = () => {
           }
         );
 
-        console.log(response);
-
         if (!response.ok) {
           throw new Error("Network response was not ok");
           toast.error("Network response was not ok");
         }
 
         if (response.status === 400) {
-          console.log("Bad Request");
           setError("Bad Request");
           toast.error("Bad Request");
         } else if (response.status === 500) {
-          console.log("Internal Server Error");
           setError("Internal Server Error");
           toast.error("Internal Server Error");
         } else if (response.status === 200) {
-          console.log("Transfer successful:");
           setMessage("Transfer successful");
           toast.success("Transfer successful");
           if (user) {
-            console.log(user)
             deleteUser(user)
               .then(() => {
                 toast.success("We hope to see you soon");
                 setMessage("We hope to see you soon");
               })
               .catch((error) => {
-                console.log("Error deleting user", error);
                 toast.error("Error deleting user");
                 setError("Error deleting user");
               });
           }
         } else if (response.status === 202) {
-          console.log(
-            "The request is being processed, the response will be sent to mail"
-          );
           setMessage(
             "The request is being processed, the response will be sent to mail"
           );
@@ -122,35 +107,31 @@ const Page = () => {
             "The request is being processed, the response will be sent to mail"
           );
         } else if (response.status === 404) {
-          console.log("Not found");
           setError("Not found");
           toast.error("Not found");
         } else if (response.status === 409) {
-          console.log("Unauthorized");
           setError("The user is not registered with us.");
           toast.error("The user is not registered with us.");
         } else {
-          console.log("Error transferring data");
           setError("Error transferring data");
           toast.error("Error transferring data");
         }
 
         const data = await response.json();
-        console.log("Transfer successful:", data);
         setMessage("Transfer successful");
       } catch (error) {
-        console.error("Error:", error);
+        toast.error("Error transferring data");
         setError("Error transferring data");
       }
     } else {
-      console.log("No operator selected");
+      toast.error("No operator selected");
+      setError("No operator selected");
     }
   }
 
   return (
     <>
       <ToastContainer />
-
       <main className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
